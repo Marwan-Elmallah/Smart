@@ -1,0 +1,126 @@
+{
+    "info": {
+        "title": "Backend",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://{{base_url}}"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "noauthAuth": {
+                "type": "http",
+                "scheme": "noauth"
+            },
+            "apikeyAuth": {
+                "type": "http",
+                "scheme": "apikey"
+            }
+        }
+    },
+    "security": [
+        {
+            "apikeyAuth": []
+        }
+    ],
+    "tags": [
+        {
+            "name": "Agent",
+            "description": "The `/me` endpoints let you manage information about the authenticated user."
+        },
+        {
+            "name": "Restaurant"
+        },
+        {
+            "name": "Restaurant > Auth"
+        },
+        {
+            "name": "Restaurant > Active"
+        },
+        {
+            "name": "Restaurant > User"
+        },
+        {
+            "name": "Restaurant > Customer"
+        },
+        {
+            "name": "Restaurant > Requests",
+            "description": "The `/me` endpoints let you manage information about the authenticated user."
+        },
+        {
+            "name": "Menu"
+        },
+        {
+            "name": "Menu > Category"
+        }
+    ],
+    "paths": {
+        "/agent/": {
+            "get": {
+                "tags": [
+                    "Agent"
+                ],
+                "summary": "All Agents",
+                "description": "Gets information about the authenticated user.",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {}
+                        }
+                    }
+                }
+            }
+        },
+        "/agent": {
+            "post": {
+                "tags": [
+                    "Agent"
+                ],
+                "summary": "Create",
+                "description": "Gets information about the authenticated user.",
+                "requestBody": {
+                    "content": {
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "userName": {
+                                        "type": "string",
+                                        "example": "marwan"
+                                    },
+                                    "password": {
+                                        "type": "integer",
+                                        "example": "1234"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "marwan@test.com"
+                                    },
+                                    "jobTitle": {
+                                        "type": "string",
+                                        "example": "Developer"
+                                    },
+                                    "phone": {
+                                        "type": "number",
+                                        "example": "+201112689590"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {}
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
