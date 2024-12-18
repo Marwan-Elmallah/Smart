@@ -26,6 +26,8 @@ const AudioFile = require("./models/STT/AudioFile");
 const Subscription = require("./models/STT/Subscription");
 const Billing = require("./models/STT/Billing");
 const Order = require("./models/Order");
+const RestaurantSubscription = require("./models/Restaurant/RestaurantSubscriptions");
+
 
 
 // Relationships
@@ -35,6 +37,17 @@ Restaurant.belongsTo(RestaurantRequest, {
     targetKey: "id",
     onDelete: "CASCADE",
 })
+
+Restaurant.hasMany(RestaurantSubscription, {
+    foreignKey: "restaurantId",
+    targetKey: "id",
+});
+
+RestaurantSubscription.belongsTo(Restaurant, {
+    foreignKey: "restaurantId",
+    targetKey: "id",
+    onDelete: "CASCADE",
+});
 
 Customer.belongsTo(Restaurant, {
     foreignKey: "restaurantId",
@@ -128,7 +141,8 @@ const models = {
     AudioFile,
     Subscription,
     Billing,
-    Order
+    Order,
+    RestaurantSubscription
 }
 
 

@@ -74,6 +74,25 @@ exports.RestaurantCreateRule = Validator({
     })
 })
 
+exports.RestaurantWithoutRequestCreateRule = Validator({
+    body: Joi.object()
+        .required()
+        .keys({
+            email: Joi.string().required().email(),
+            password: Joi.string()
+                .required()
+                .pattern(
+                    new RegExp(
+                        "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$"
+                    )
+                ),
+            name: Joi.string().required(),
+            phone: Joi.string().required(),
+            address: Joi.string().required(),
+            status: Joi.boolean().optional(),
+        }),
+});
+
 exports.UpdatePasswordRule = Validator({
     body: Joi.object().required().keys({
         id: Joi.number().required(),

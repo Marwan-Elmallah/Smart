@@ -9,6 +9,7 @@ const Logger = require('./helper/logger');
 const ExpressApplication = require('./config/express');
 const config = require('./config');
 const { sequelize } = require('./database');
+const { RestaurantController } = require('./controller/Restaurant');
 const app = express()
 app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 app.use('/image', express.static('public/image'));
@@ -21,6 +22,9 @@ app.use(express.urlencoded({
     extended: true,
     limit: '100mb'
 }))
+
+RestaurantController.scheduleTasks();
+
 ExpressApplication(app);
 let server;
 async function startServer() {
@@ -53,6 +57,7 @@ async function startServer() {
     await connectToDatabase();
 }
 startServer();
+
 
 
 

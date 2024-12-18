@@ -1,25 +1,69 @@
 const { Op } = require("sequelize");
-const { Restaurant, RestaurantRequest, Menu } = require("../../database").models;
-
+const { Restaurant, RestaurantRequest, Menu, RestaurantSubscription } = require("../../database").models;
 const cron = require('node-cron');
-const moment = require("moment");
 
 class RestaurantController {
     static async scheduleTasks() {
         cron.schedule("0 0 * * *", async () => {
             try {
+                console.log("Updating restaurant statuses...");
                 await RestaurantController.updateRestaurantStatuses();
+                // console.log("Restaurant statuses updated successfully.");
             } catch (error) {
-                // Handle the error here. For example, log the error or send a notification.
+                console.error("Error updating restaurant statuses:", error);
             }
         });
+
     }
 
     static async updateRestaurantStatuses() {
-        const today = moment().format("YYYY-MM-DD");
+        try {
+            // Current date
+            const currentDate = new Date();
 
-        console.log(today);
+            // Step 1: Fetch subscriptions where endDate is less than current date (expired)
+            const expiredSubscriptions = await RestaurantSubscription.findAll({
+                attributes: ["RestaurantId"],
+                where: {
+                    endDate: { [Op.lt]: currentDate }, // endDate < current date (expired)
+                    status: true, // Only consider active subscriptions
+                },
+                group: ["RestaurantId"],
+            });
 
+            // console.log(expiredSubscriptions);
+
+
+            // Step 2: Update the status of expired subscriptions to false
+            const expiredRestaurantIds = expiredSubscriptions.map(sub => sub.dataValues.RestaurantId);
+
+            if (expiredRestaurantIds.length > 0) {
+                await RestaurantSubscription.update(
+                    { status: false }, // Set subscription status to false
+                    {
+                        where: {
+                            RestaurantId: { [Op.in]: expiredRestaurantIds },
+                        },
+                    }
+                );
+
+                // Step 3: Update the restaurant status to false for expired subscriptions
+                await Restaurant.update(
+                    { status: false }, // Set restaurant status to false
+                    {
+                        where: {
+                            id: { [Op.in]: expiredRestaurantIds },
+                        },
+                    }
+                );
+
+                console.log("Restaurant statuses updated successfully.");
+            } else {
+                console.log("No expired subscriptions found.");
+            }
+        } catch (error) {
+            console.error("Error updating restaurant statuses:", error);
+        }
     }
 
     static async allRestaurant(req, res) {
@@ -114,6 +158,48 @@ class RestaurantController {
             message: 'Restaurant and Menu Created Successfully',
             data: newRestaurant
         })
+    }
+
+    static async storeRestaurant(req, res) {
+        const { email, password, name, phone, address, status } = req.body;
+        const emailExist = await Restaurant.findOne({ where: { email } });
+        if (emailExist) {
+            return res.status(400).json({
+                error: true,
+                code: 400,
+                message: "Email Already Exists",
+            });
+        }
+        const newRestaurant = await Restaurant.create({
+            email,
+            password,
+            name,
+            phone,
+            address,
+            status: status || true,
+        });
+
+        await Menu.create({
+            restaurantId: newRestaurant.id,
+            name: `Main Menu ${name}`,
+        });
+
+        await RestaurantSubscription.create({
+            restaurantId: newRestaurant.id,
+            amount: 0,
+            startDate: new Date(),
+            // 14 days free trial
+            endDate: new Date().setDate(new Date().getDate() + 10),
+            // endDate: new Date(Date.now() + 120 * 1000),
+            type: "free",
+        });
+
+        return res.status(201).json({
+            error: false,
+            code: 201,
+            message: "Restaurant Created Successfully",
+            data: newRestaurant,
+        });
     }
 
     static async delete(req, res) {
